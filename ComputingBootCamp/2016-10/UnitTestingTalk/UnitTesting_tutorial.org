@@ -34,70 +34,81 @@
 
 
 * Why unit testing?
+There is an extensive litany of types of software testing: system,
+integration, regression, functional, black box, white box, regression,
+etc..  These many of these overlap in purpose and are combined in
+application.
+
+For this talk, we will concentrate on *unit testing*.  This is the
+most basic kind of testing.  It exercises the lowest levels of
+functionality: functions and class methods, or even single lines of
+code, and therefore affects most directly the process of developing
+software as it is occurring.
+
 Fowler on Unit testing:
+- Make sure tests are fully automatic and that they check their own results.
 
-* Make sure tests are fully automatic and that they check their own
-  results.
   It's tedious to run test for which you have to manually check that
-  output is correct, and as a result, you will run the tests less often.
+  output is correct, and as a result, you will run the tests less
+  often.
 
-* A suite of tests is a powerful bug detector that decapitates the
-  time it takes to find bugs.
+- A suite of tests is a powerful bug detector that decapitates the time
+  it takes to find bugs.
+
   In the absence of tests, the assertion is that most programming time
   is spent debugging, and most of the time spent debugging is finding
   the bug.  During development, running a fairly complete set of tests
   continuously as you add code will tell you right away when and
   (usually) where you've introduced a bug.
 
-* Run your tests frequently. Localize tests whenever you compile ---
+- Run your tests frequently. Localize tests whenever you compile --
   every test at least every day.
+
   This ensures that any bugs that are introduced during development
-  are found right away.  For running a full suite of tests, a CI system
-  is indispensible.
+  are found right away.  For running a full suite of tests, a CI
+  system is indispensible.
 
-* When you get a bug report, start by writing a unit test that
+- When you get a bug report, start by writing a unit test that
   exposes the bug.
+
   This helps you indentify the nature of the bug very precisely since
-  you want the code that exercises the bug to be as compact as possible.
-  You will know that your development is done when the added test passes.
-  This is the rationale for Test Driven Development.
+  you want the code that exercises the bug to be as compact as
+  possible.  You will know that your development is done when the
+  added test passes.  This is the rationale for Test Driven
+  Development.
 
-* It is better to write and run incomplete tests than not to run
+- It is better to write and run incomplete tests than not to run
   complete tests.
+
   Some tests are better than none even if they are not complete.
-  Tests should be written for code that is likely to be complicated
-  to implement, i.e., "risky" code; but more precisely, tests should
-  be implemented for any code for which its failure would have the
-  greatest cost:  even if the code is straight-forward, if its used in
-  contexts where its failure would break crucial functionality, stringent
-  unit tests should be written and run routinely.
+  Tests should be written for code that is likely to be complicated to
+  implement, i.e., "risky" code; but more precisely, tests should be
+  implemented for any code for which its failure would have the
+  greatest cost: even if the code is straight-forward, if its used in
+  contexts where its failure would break crucial functionality,
+  stringent unit tests should be written and run routinely.
 
-* Think of the boundary conditions under which things might go wrong
+- Think of the boundary conditions under which things might go wrong
   and concentrate your tests there.
-  This includes things like entry and exit points of loops where off-by-one
-  errors occur, cases where defaults are things like empty or non-existent
-  files, etc..
 
-* Don't forget to test that exceptions are raised when things are
+  This includes things like entry and exit points of loops where
+  off-by-one errors occur, cases where defaults are things like empty
+  or non-existent files, etc..
+
+- Don't forget to test that exceptions are raised when things are
   expected to go wrong.
+
   If the code raises exceptions, then that is part of its interface
-  and should be subject to tests, especially if client code is expected
-  to handle those exceptions in some particular way.
+  and should be subject to tests, especially if client code is
+  expected to handle those exceptions in some particular way.
 
-* Don't let the fear that testing can't catch all bugs stop you from
+- Don't let the fear that testing can't catch all bugs stop you from
   writing the tests that will catch most bugs.
-  100% testing coverage is a nice goal, but it can be a tall mountain to
-  climb.  It's better to concentrate ones efforts on implementing good
-  tests that will likely prove most useful in maintaining code quality.
 
-There is an extensive litany of types of software testing: system,
-integration, regression, functional, black box, white box, regression,
-etc..  These many of these overlap in purpose and are combined in
-application.  For this talk, we will concentrate on unit testing which
-is the most basic kind of testing where code is actually executed and
-which impacts most directly software development as it is occurring.
-This is because it exercises the lowest levels of functionality:
-functions and class methods, or even single lines of code.
+  100% testing coverage is a nice goal, but it can be a tall mountain
+  to climb.  It's better to concentrate ones efforts on implementing
+  good tests that will likely prove most useful in maintaining code
+  quality.
 
 * Writing Unit Tests
 In order for unit testing to be effective,

@@ -1,0 +1,58 @@
+* Why test code
+  * types of tests
+  * what is unit testing
+  * benefits of unit tests
+    * ensures code quality and makes debugging easier, thereby
+      reducing development time
+    * serves as interface documentation as it provides canonical usage
+      examples
+    * enables aggressive refactoring
+
+* How to write and use unit tests
+  * test for success, failure, consistency
+  * unit tests should be quick, self-checking, and compact
+  * Unit tests should be run often during development in order
+    to pinpoint bugs as soon as they are introduced.
+  * When dealing with a new bug, write a unit test that exposes it.
+    Once the test passes, you are done.  Keep the test as part of the
+    test suite.
+  * Similarly for new features, write the unit test code first.  The
+    development is finished as soon as the test passes.  Adhering to
+    these steps have two benefits:
+    * Forces the developer to concentrate on interfaces rather than
+      underlying implementation.
+    * Helps ensure that only the needed code is added, and so reduces
+      the likelihood of introducing new bugs via untested features.
+
+* Coverage is the fraction of code that is tested by the full test
+  suite. 100% coverage is "ideal", but with limited resources it is
+  better to concentrate on testing the parts of the code that are
+  riskiest in the sense that the cost of failure is the greatest This
+  means that even if some code is straight-forward, if its failure has
+  signficant adverse consequences, it should be tested.  Conversely,
+  if some code is tricky but tends to fail in an inconsequential way,
+  devote your limited resources for writing tests elsewhere.
+
+* Use a unit testing framework
+  * runs all tests and aggregates results
+  * only reports failures (with details)
+  * provides assertion methods for different types of tests
+  * enables use of test "fixtures" which allow one to define
+    precisely the environment or context in which the test runs.
+  * allows one to define "test suites" that can be run to test
+    related but otherwise isolated parts of the code.
+  * For python, unittest (and its xunit cousins), py.test, numpy.testing,
+
+* Unit test examples
+  * .setUp, .tearDown
+  * class level fixtures
+  * asserts (Equals, Raises, for containers)
+  * white box vs black box tests
+
+* Continuous Integration
+  * Tests at all levels are run regularly over the whole code base
+    to ensure that the software is in an operational state.
+  * CI systems such as Travis-CI and Jenkins can be run to trigger
+    on code respository events, such as commits or pull-requests, or
+    to run on regular intervals.
+  * These 
