@@ -35,8 +35,8 @@
 
 * What is unit testing?
 There are many of types of software testing: system, integration,
-regression, functional, black box, white box, regression, etc..  These
-many of these overlap in purpose and are combined in application.
+regression, functional, black box, white box, regression, etc..
+Many of these overlap in purpose and are combined in application.
 
 For this talk, we will concentrate on *unit testing*.  This is the
 most basic kind of testing.  It exercises the lowest levels of
@@ -110,7 +110,7 @@ Here is a simple example:
 - Coverage: This is the fraction of code that is tested by the full test
   suite. 100% is "ideal", but with limited resources it is
   better to concentrate on testing the parts of the code that are
-  riskiest in the sense that the cost of failure is the greatest.
+  riskiest, i.e., where the cost of failure is the greatest.
 
 * Unit testing frameworks
   Unit test frameworks provide tools to help you write, organize, and
@@ -122,7 +122,7 @@ Here is a simple example:
   precisely the environment or context in which the test runs.
 - Allows one to define "test suites" that can be run to test
   related but otherwise isolated parts of the code.
-- For python, unittest (and its xunit cousins), py.test, numpy.testing,
+- For python, [[https://docs.python.org/2/library/unittest.html][unittest]], [[http://doc.pytest.org/en/latest/][py.test]], [[http://docs.scipy.org/doc/numpy/reference/routines.testing.html][numpy.testing]]
 
 * unittest example
 I have a toy package, [[https://github.com/jchiang87/dateconvert][dateconvert]], on GitHub.
@@ -194,8 +194,9 @@ $
 #+END_SRC
 
 * Continuous Integration
-- Tests at all levels are run regularly over the whole code base
-  to ensure that the software is in an operational state.
+- Code is built and tests at all levels are run regularly over the
+  whole code base to ensure that the software is in an operational
+  state.
 - CI server testing can include static code checking, coverage
   assessment, unit tests, integration tests, performance tests,
   and aggregation of metrics including time histories.
@@ -214,29 +215,29 @@ $
   clients.
 
 * Using Travis-CI
-  - Free for public GitHub-hosted repositories
-    - Add a .travis.yml file.
-      - install code and dependencies
-      - set up environment
-      - run tests and coverage analysis
-    - Connect GitHub repo to Travis-CI.
+  Free for public GitHub-hosted repositories
+  - Add a .travis.yml file.
+    - install code and dependencies
+    - set up environment
+    - run tests and coverage analysis
+  - Connect GitHub repo to Travis-CI.
 
-      Go to your [[https://github.com/jchiang87/dateconvert][GitHub repo]] (as admin):
+    Go to your [[https://github.com/jchiang87/dateconvert][GitHub repo]] (as admin):
 
-      Settings -> Integrations & services -> Add service
+    Settings -> Integrations & services -> Add service
 
-      At [[https://travis-ci.org/][Travis-CI]]:
+    At [[https://travis-ci.org/][Travis-CI]]:
 
-      My Repositories +(Add New Repository)
-      -> Sync Account
-      -> <Activate switch>
-    - At GitHub:
-      Settings -> Integrations & services -> Travis-CI -> Test service
-    - Connect to [[https://coveralls.io/][Coveralls]]
-      -> Add Repos
-      -> Refresh Private Repos
-      -> toggle repo switch
-    - Add badges to GitHub repo.
+    My Repositories +(Add New Repository)
+    -> Sync Account
+    -> <Activate switch>
+  - At GitHub:
+    Settings -> Integrations & services -> Travis-CI -> Test service
+  - Connect to [[https://coveralls.io/][Coveralls]]
+    -> Add Repos
+    -> Refresh Private Repos
+    -> toggle repo switch
+  - Add badges to GitHub repo.
 
 * Example .travis.yml
 #+LATEX: \footnotesize
