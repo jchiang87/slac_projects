@@ -4,7 +4,7 @@
 #+BEAMER_FRAME_LEVEL: 1
 #+TITLE: Unit Testing and Continuous Integration
 #+AUTHOR: Jim Chiang
-#+DATE: 2016-10-06
+#+DATE: 2016-10-07
 #+COLUMNS: %45ITEM %10BEAMER_env(Env) %8BEAMER_envargs(Env Args) %4BEAMER_col(Col) %8BEAMER_extra(Extra)
 #+PROPERTY: BEAMER_col_ALL 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 :ETC
 #+OPTIONS: toc:nil
@@ -13,12 +13,11 @@
 #+LaTeX_HEADER: \hypersetup{colorlinks=true, urlcolor=blue}
 
 * Outline
-- Why Test Code?
-- What is Unit Testing?
-- Writing unit tests and test-driven development
-- unittest frameworks (py.test)
-- examples.
-- What is Continuous Integration?
+- Why test code?
+- How to write and use unit tests
+- Unit testing frameworks
+- Unit test examples
+- Continuous Integration
 - Using Travis-CI
 
 * Why Test Code?
@@ -27,17 +26,13 @@
 - Any code base of significant size contains bugs.
 - Any new development can introduce bugs or break things in other parts of
   the code.
-- Dedicated tests verify, in a systematic way, that the code behaves as
-  expected.
-- A comprehensive set of tests ensures that the code continues
-  to perform as expected if any new development occurs.
+- A comprehensive set of tests ensures, in a systematic way, that the
+  code continues to perform as expected if any new development occurs.
 
-
-* Why unit testing?
-There is an extensive litany of types of software testing: system,
-integration, regression, functional, black box, white box, regression,
-etc..  These many of these overlap in purpose and are combined in
-application.
+* What is unit testing?
+There are many of types of software testing: system, integration,
+regression, functional, black box, white box, regression, etc..  These
+many of these overlap in purpose and are combined in application.
 
 For this talk, we will concentrate on *unit testing*.  This is the
 most basic kind of testing.  It exercises the lowest levels of
@@ -45,78 +40,33 @@ functionality: functions and class methods, or even single lines of
 code, and therefore affects most directly the process of developing
 software as it is occurring.
 
-Fowler on Unit testing:
-- Make sure tests are fully automatic and that they check their own results.
+#+LATEX: \vspace{0.1in}
+Here is a simple example:
 
-  It's tedious to run test for which you have to manually check that
-  output is correct, and as a result, you will run the tests less
-  often.
+#+LATEX: \footnotesize
+#+BEGIN_SRC python
+    def test_ISOT_to_MJD(self):
+        isot = '2016-10-27T00:00:00.000'
+        self.assertEqual(ISOT_to_MJD(isot), 57688.)
+#+END_SRC
 
-- A suite of tests is a powerful bug detector that decapitates the time
-  it takes to find bugs.
-
-  In the absence of tests, the assertion is that most programming time
-  is spent debugging, and most of the time spent debugging is finding
-  the bug.  During development, running a fairly complete set of tests
-  continuously as you add code will tell you right away when and
-  (usually) where you've introduced a bug.
-
-- Run your tests frequently. Localize tests whenever you compile --
-  every test at least every day.
-
-  This ensures that any bugs that are introduced during development
-  are found right away.  For running a full suite of tests, a CI
-  system is indispensible.
-
-- When you get a bug report, start by writing a unit test that
-  exposes the bug.
-
-  This helps you indentify the nature of the bug very precisely since
-  you want the code that exercises the bug to be as compact as
-  possible.  You will know that your development is done when the
-  added test passes.  This is the rationale for Test Driven
-  Development.
-
-- It is better to write and run incomplete tests than not to run
-  complete tests.
-
-  Some tests are better than none even if they are not complete.
-  Tests should be written for code that is likely to be complicated to
-  implement, i.e., "risky" code; but more precisely, tests should be
-  implemented for any code for which its failure would have the
-  greatest cost: even if the code is straight-forward, if its used in
-  contexts where its failure would break crucial functionality,
-  stringent unit tests should be written and run routinely.
-
-- Think of the boundary conditions under which things might go wrong
-  and concentrate your tests there.
-
-  This includes things like entry and exit points of loops where
-  off-by-one errors occur, cases where defaults are things like empty
-  or non-existent files, etc..
-
-- Don't forget to test that exceptions are raised when things are
-  expected to go wrong.
-
-  If the code raises exceptions, then that is part of its interface
-  and should be subject to tests, especially if client code is
-  expected to handle those exceptions in some particular way.
-
-- Don't let the fear that testing can't catch all bugs stop you from
-  writing the tests that will catch most bugs.
-
-  100% testing coverage is a nice goal, but it can be a tall mountain
-  to climb.  It's better to concentrate ones efforts on implementing
-  good tests that will likely prove most useful in maintaining code
-  quality.
+* Benefits of unit testing
+- Since the testing is finely grained, many bugs can be localized
+  very quickly and precisely.
+- The tests themselves serve as interface documentation since they
+  provide canonical usage examples that are guaranteed to work.
+- Comprehensive, quickly executing tests allow one to "refactor"
+  aggressively since any new bugs will be found right away.
+  Refactoring is the practice of improving the design of existing code
+  while keeping its functionality the same.  Unit tests help ensure
+  that outcome.
 
 * Writing Unit Tests
-In order for unit testing to be effective,
 - Tests should run quickly and automatically.
   One should feel free to run unit tests many times during a session.
-- Tests should be self-checking with
-  only failures having any output that needs to be parsed.
-- Test code should be standalone and self-contained. Dependencies on
+- Tests should be self-checking.
+  Only failures should produce output that needs to be parsed.
+- Test code should be standalone and self-contained.  Dependencies on
   external data (which may have limited accessibility or which may
   change over time, e.g., the contents of a web page) should be kept
   to a minumum.
@@ -127,49 +77,136 @@ In order for unit testing to be effective,
     the expected way? e.g., by raising specific exceptions or returning
     specific error codes.
 
-* Ways to Test
-  (see https://developer.lsst.io/coding/unit_test_policy.html)
-  - White-box Tests
-    "These tests are designed by examining the internal logic of each
-    module and defining the input data sets that force the execution
-    of different paths through the logic."
+#+LATEX: \footnotesize
+#+BEGIN_SRC python
+    def test_ISOT_to_MJD_bad_input(self):
+        "Pass the correct type (str), but with an invalid value."
+        isot = '10-07-2016 00:00:00.000'
+        self.assertRaises(ValueError, ISOT_to_MJD, isot)
+#+END_SRC
 
-  - Black-box Tests
-    "These tests are designed by examining the specification of each
-    module and defining input data sets that will result in different
-    behavior (e.g., outputs). Black-box tests should be designed to
-    exercise the software for its whole range of inputs."
+* Best practices
+- When dealing with a new bug, first write a unit test that exposes
+  and isolates it, and add that test to the test suite.  As soon as
+  the test passes, the bug is fixed.
+- Before adding new features, write the unit test code first.  The
+  tests should fail at the outset, before any work on the production code
+  has been done. *Once the tests pass, the development is done*.  This
+  is known as Test Driven Development.  This
+  - forces the developer to concentrate on interfaces rather than the
+    underlying implementation,
+  - helps ensure that only the needed code is added, and thereby reduces
+    the likelihood of introducing new bugs via untested features.
 
-  - Performance Tests
-    "If the detailed design placed resource constraints on the
-    performance of a module, compliance with these constraints should
-    be tested."
+* More best practices
+- Make sure the full set of tests in a package or repo all pass before
+  pushing your code to the master branch of the main repository,
+  otherwise you may break the build for others.  Use of branches and
+  continuous integration services can help prevent this.
+- Coverage: This is the fraction of code that is tested by the full test
+  suite. 100% is "ideal", but with limited resources it is
+  better to concentrate on testing the parts of the code that are
+  riskiest in the sense that the cost of failure is the greatest.
 
-* Test Driven Development
-  - Similarity to debugging:
-    - Reproduce and isolate the bug.
-    - Work on production code until bug is fixed.
-  - For new functionality:
-    - Write the test code that calls the function or method and tests
-      the output.  Since the production code hasn't been written yet,
-      this test code will fail.  Production code should not be touched
-      (except for refactoring) unless it is to fix a failing test.
+* Unit testing frameworks
+  Unit test frameworks provide tools to help you write, organize, and
+  execute your tests.
+- Runs all tests and aggregates results
+- Only reports failures (with details)
+- Provides assertion methods for different types of tests
+- Enables use of test "fixtures" which allow one to define
+  precisely the environment or context in which the test runs.
+- Allows one to define "test suites" that can be run to test
+  related but otherwise isolated parts of the code.
+- For python, unittest (and its xunit cousins), py.test, numpy.testing,
 
-    - Add production code until and only until the tests pass ("the
-      simplest thing that can possibly work").  This helps prevent
-      adding functionality that would not be tested by the test code
-      that was just written.
+* unittest example
+#+LATEX: \footnotesize
+#+BEGIN_SRC python
+import unittest
+import numpy as np
+import dateconvert
 
-    - Refactor to remove duplicated functionality or to handle special
-      cases more generally (being careful not to introduce too much
-      new functionality, if any).
+class DateConversionTestCase(unittest.TestCase):
+    "Test case for date conversion utility"
+    def setUp(self):
+        "Read in some validated MJD-ISOT pairs."
+        self.test_data = np.recfromtxt('mjd_isot_test_values.txt')
 
-    - Redesign interfaces:
-      - Update tests.
-      - Update production code.
+    def tearDown(self):
+        "Nothing to tear down."
+        pass
 
-* Unit test examples:
-  <
+    def test_MJD_to_ISOT(self):
+        "Test conversion from MJD to ISOT."
+        for mjd, isot in self.test_data:
+            self.assertEqual(dateconvert.MJD_to_ISOT(mjd), isot)
+#+END_SRC
+
+* unittest example (cont.)
+#+LATEX: \footnotesize
+#+BEGIN_SRC python
+    def test_ISOT_to_MJD(self):
+        "Test conversion from ISOT to MJD."
+        for mjd, isot in self.test_data:
+            self.assertAlmostEqual(dateconvert.ISOT_to_MJD(isot), mjd, places=9)
+
+    def test_DateConversionConsistency(self):
+        "Test the round trip between MJD_to_ISOT and ISOT_to_MJD."
+        for mjd in np.arange(40000, 57700, 31.1424, dtype=np.float):
+            isot = dateconvert.MJD_to_ISOT(mjd)
+            self.assertAlmostEqual(mjd, dateconvert.ISOT_to_MJD(isot), places=9)
+
+    def test_ISOT_to_MJD_bad_input(self):
+        "Pass the correct type (str), but with an invalid value."
+        isot = '10-07-2016 00:00:00'
+        self.assertRaises(ValueError, dateconvert.ISOT_to_MJD, isot)
+
+if __name__ == '__main__':
+    unittest.main()
+#+END_SRC
+
+* unittest example (cont.)
+Running this one gets
+#+LATEX: \footnotesize
+#+BEGIN_SRC sh
+$ python test_dateconvert.py
+F...
+======================================================================
+FAIL: test_DateConversionConsistency (__main__.DateConversionTestCase)
+Test the round trip between MJD_to_ISOT and ISOT_to_MJD.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "test_dateconvert.py", line 29, in test_DateConversionConsistency
+    self.assertAlmostEqual(mjd, dateconvert.ISOT_to_MJD(isot), places=9)
+AssertionError: 45169.638399999501 != 45169.6384 within 9 places
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.053s
+
+FAILED (failures=1)
+$
+#+END_SRC
+
+* Continuous Integration
+- Tests at all levels are run regularly over the whole code base
+  to ensure that the software is in an operational state.
+- CI server testing can include static code checking, coverage
+  assessment, unit tests, integration tests, performance tests,
+  and aggregation of metrics including time histories.
+- CI systems such as Travis-CI and Jenkins can be run to trigger
+  on code respository events, such as commits or pull-requests, or
+  to run on regular intervals (nightly builds).
+- In order for CI to be effective, work should be committed and
+  tested on at least a daily basis in order to prevent conflicts
+  which are difficult to resolve and which stem from large commits,
+  e.g., a week's worth of work.
+- For revision systems where branching is available, CI builds
+  can be performed for the branch against the current master,
+  and should not be merged unless it builds correctly.
+- These practices help keep the mainline of the code in a deployable
+  state at all times, and provide current builds for testing by
+  clients.
 
 * Using Travis-CI
   - Free for public GitHub-hosted repositories
@@ -182,7 +219,7 @@ In order for unit testing to be effective,
       At Travis-CI:
 
       My Repositories +(Add New Repository) -> <Activate switch>
-    - Add a .travis.yml file. (See [[https://github.com/DarkEnergyScienceCollaboration/desc_package_template][desc\_package\_template]] package.)
+    - Add a .travis.yml file.
       - install code and dependencies
       - set up environment
       - run tests and coverage analysis
@@ -190,97 +227,28 @@ In order for unit testing to be effective,
     - Add badges to GitHub repo.
 
 * Example .travis.yml
-\smaller
+#+LATEX: \footnotesize
 #+BEGIN_SRC yml
-language: C
+language: python
+
+python:
+  - "2.7"
 
 install:
-  - travis_wait ./setup/travis_install.sh lsst-sims nose pandas pylint
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - source eups-setups.sh
-  - pip install coveralls
-  - setup lsst_sims
-  - eups declare -r . twinkles -t current
-  - setup twinkles
+  - pip install -r requirements.txt
+  - source setup/setup.sh
 
-cache:
-  directories:
-  - $HOME/miniconda.tarball
-  timeout: 360
-#+END_SRC yml
-
-* Example .travis.yml (continued)
-\smaller
-#+BEGIN_SRC yml
 services:
   - mysql
 
 before_script:
-  - mysql -e 'create database myapp_test'
+  - mysql -e 'create database myapp_test;'
   - mysql -e 'show databases;'
 
 script:
-  - nosetests -s --with-coverage --cover-package=desc.twinkles
-  - pylint --py3k `find . -name \*.py -print | grep -v workflows`
+  - nosetests -s --with-coverage --cover-package=dateconvert
+  - pylint --py3k `find . -name \*.py -print`
 
 after_success:
   - coveralls
-#+END_SRC yml
-
-* SLCosmo: Description and Use Cases
-  SLCosmo is a package to infer cosmological parameters from
-  Strong Lensing time delay measurements.
-  - Two classes (so far):
-    - \code{TDC2ensemble}: container for posterior samples of SL time delays.
-    - \code{SLCosmo}: container for \code{TDC2ensemble} objects
-      - Creates mocks
-      - Reads in persisted files
-      - computes cosmological parameter posteriors (sampling priors and
-        combining with TD posteriors
-
-  - Use cases:
-    - I/O
-      - Test output formatting.
-      - Test that input files can be read in correctly.
-      - Test that I/O consistency.
-    - Mock Generation
-      - Test that generated mocks have expected properties.
-    - Computing joint likelihoods for a collection of lens systems.
-      - Test for expected results using standard input data.
-
-* Worked example:
-  - [[https://github.com/DarkEnergyScienceCollaboration/SLCosmo/issues/9][GitHub]] issue.
-  - [[https://github.com/DarkEnergyScienceCollaboration/SLCosmo/pull/8][Pull request]] for adding the new functionality.
-  - The [[https://github.com/DarkEnergyScienceCollaboration/SLCosmo/blob/b84305c37774db27066b28865dca574e5b0b8418/tests/test_TDC2ensemble.py][new test code]].
-  - The [[https://travis-ci.org/DarkEnergyScienceCollaboration/SLCosmo/builds/145666391][failure]] of the PR in Travis-CI.
-
-* Pair Programming on Unit Tests
-  - Pair up, matching a more experienced developer with a less experienced
-    one if possible.
-  - Pick one or two unit tests from the [[https://github.com/DarkEnergyScienceCollaboration/SLCosmo/issues][SLCosmo issues]] to implement.
-  - Work on the tests using GitHub flow:
-\smaller
-Fork the repo at
-https://github.com/DarkEnergyScienceCollaboration/SLCosmo
-#+BEGIN_SRC sh
-$ git clone git@github.com:<github userid>/SLCosmo.git
-$ cd SLCosmo
-$ source setup/setup.sh
-$ git checkout -b <descriptive branch name>
-$ cd tests
-<... add new tests or modify existing tests ...>
-$ python test_[SLCosmo,TDC2ensemble].py
-<... show that it fails ...>
-$ git add test_[SLCosmo,TDC2ensemble].py
-$ git commit -m "unit tests for ..."
-$ git push -u origin <descriptive branch name>
-#+END_SRC sh
-Then at https://github.com/<github userid>/SLCosmo go to your
-branch and make the pull-request.
-
-* Group Code Review
-  We'll pick one or two pull-requests and go through the new code, adding
-  comments on the source code as appropriate.
-
-* Wrap-up
-
+#+END_SRC
