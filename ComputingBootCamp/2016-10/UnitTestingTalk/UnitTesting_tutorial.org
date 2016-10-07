@@ -14,11 +14,15 @@
 
 * Outline
 - Why test code?
-- How to write and use unit tests
+- What is unit testing?
+- Benefits of unit testing
+- Writing unit tests
+- Recommended practices
 - Unit testing frameworks
-- Unit test examples
+- unittest example
 - Continuous Integration
 - Using Travis-CI
+- Some resources on unit testing
 
 * Why Test Code?
 - We all test code: Any time code is executed and we do something with
@@ -61,7 +65,7 @@ Here is a simple example:
   while keeping its functionality the same.  Unit tests help ensure
   that outcome.
 
-* Writing Unit Tests
+* Writing unit tests
 - Tests should run quickly and automatically.
   One should feel free to run unit tests many times during a session.
 - Tests should be self-checking.
@@ -81,11 +85,11 @@ Here is a simple example:
 #+BEGIN_SRC python
     def test_ISOT_to_MJD_bad_input(self):
         "Pass the correct type (str), but with an invalid value."
-        isot = '10-07-2016 00:00:00.000'
+        isot = '10-27-2016 00:00:00.000'
         self.assertRaises(ValueError, ISOT_to_MJD, isot)
 #+END_SRC
 
-* Best practices
+* Some recommended practices
 - When dealing with a new bug, first write a unit test that exposes
   and isolates it, and add that test to the test suite.  As soon as
   the test passes, the bug is fixed.
@@ -98,7 +102,7 @@ Here is a simple example:
   - helps ensure that only the needed code is added, and thereby reduces
     the likelihood of introducing new bugs via untested features.
 
-* More best practices
+* More recommended practices
 - Make sure the full set of tests in a package or repo all pass before
   pushing your code to the master branch of the main repository,
   otherwise you may break the build for others.  Use of branches and
@@ -121,6 +125,7 @@ Here is a simple example:
 - For python, unittest (and its xunit cousins), py.test, numpy.testing,
 
 * unittest example
+I have a toy package, [[https://github.com/jchiang87/dateconvert][dateconvert]], on GitHub.
 #+LATEX: \footnotesize
 #+BEGIN_SRC python
 import unittest
@@ -210,20 +215,27 @@ $
 
 * Using Travis-CI
   - Free for public GitHub-hosted repositories
-    - Connect GitHub repo to Travis-CI.
-
-      GitHub repo (as admin):
-
-      Settings -> Webhooks & services -> Add service
-
-      At Travis-CI:
-
-      My Repositories +(Add New Repository) -> <Activate switch>
     - Add a .travis.yml file.
       - install code and dependencies
       - set up environment
       - run tests and coverage analysis
-    - Connect to Coveralls
+    - Connect GitHub repo to Travis-CI.
+
+      Go to your [[https://github.com/jchiang87/dateconvert][GitHub repo]] (as admin):
+
+      Settings -> Integrations & services -> Add service
+
+      At [[https://travis-ci.org/][Travis-CI]]:
+
+      My Repositories +(Add New Repository)
+      -> Sync Account
+      -> <Activate switch>
+    - At GitHub:
+      Settings -> Integrations & services -> Travis-CI -> Test service
+    - Connect to [[https://coveralls.io/][Coveralls]]
+      -> Add Repos
+      -> Refresh Private Repos
+      -> toggle repo switch
     - Add badges to GitHub repo.
 
 * Example .travis.yml
@@ -252,3 +264,15 @@ script:
 after_success:
   - coveralls
 #+END_SRC
+
+* Some resources on unit testing
+
+- http://docs.python-guide.org/en/latest/writing/tests/
+
+- https://docs.python.org/2/library/unittest.html
+
+- http://www.diveintopython.net/unit_testing/index.html
+
+- https://travis-ci.org/
+
+- https://coveralls.io/
