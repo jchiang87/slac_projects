@@ -1,0 +1,173 @@
+#+STARTUP: beamer
+#+LaTeX_CLASS: beamer
+#+LaTeX_CLASS_OPTIONS: [10pt, t]
+#+BEAMER_FRAME_LEVEL: 1
+#+TITLE: Image Simulation Tools for LSST and Beyond...
+#+AUTHOR: Jim Chiang, Josh Meyers
+#+DATE: 2017-01-13
+#+COLUMNS: %45ITEM %10BEAMER_env(Env) %8BEAMER_envargs(Env Args) %4BEAMER_col(Col) %8BEAMER_extra(Extra)
+#+PROPERTY: BEAMER_col_ALL 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 :ETC
+#+OPTIONS: toc:nil
+#+LaTeX_HEADER: \newcommand{\code}[1]{{\tt{#1}}}
+#+LaTeX_HEADER: \newcommand{\mybold}[1]{{\textbf{#1}}}
+#+LaTeX_HEADER: \hypersetup{colorlinks=true, urlcolor=blue}
+
+* Outline
+- Using the OpSim observing cadence file
+- Generating "instance catalogs" with CatSim
+- astrometry.net index files
+- Running PhoSim
+- imSim: A GalSim-based image simulation package for LSST
+- Performing a Level 2-ish analysis using the LSST Stack
+
+* Using the OpSim observing cadence file
+- The LSST Project uses the Operations Simulator (OpSim) to generate
+  simulated pointing histories of the LSST observations as SQLite
+  database files. Each entry in the Summary table of an OpSim db file
+  corresponds to a single visit (nominally 30s) by the LSST and
+  includes the pointing direction, telescope configuration, and
+  observing conditions.
+
+- The current baseline cadence file is \code{minion\_1016\_sqlite.db.gz}
+  and can be obtained from
+  https://www.lsst.org/scientists/simulations/opsim/opsim-survey-data
+  where [[https://www.lsst.org/scientists/simulations/opsim/summary-table-column-descriptions-v335][a description of the Summary table schema]] is also available.
+
+- The suitability of a proposed observing cadence for a particular
+  area of Dark Energy science can be evaluated using the Metric Analysis
+  Framework (MAF).  Phil talked about OpSim and MAF at a previous
+  [[https://confluence.slac.stanford.edu/display/LSC/Science-Driven+Optimization+of+the+LSST+Observing+Strategy][LSST@SLAC presentation]].
+
+* Generating Instance Catalogs with CatSim
+- Instance catalogs contain the input information -- the observation
+  parmeters and object lists -- that PhoSim uses to generate simulated
+  focal plane exposures.  The Catalog Simulator (CatSim) code can be
+  used to generate these instance catalogs in order to perform
+  realistic simulations.
+
+- CatSim accesses databases hosted at UW that contain object catalogs
+  of stars, galaxies, supernovae, and AGNs that are based on the
+  Millenium simulation and semi-analytic baryon models.  A summary of
+  the model inputs to CatSim is available at
+  https://www.lsst.org/scientists/simulations/catsim.
+
+- One can create customized object types, e.g., in Twinkles, we
+  simulate supernovae and strongly lensed AGNs.
+  https://github.com/LSSTDESC/Twinkles
+
+* Example code to produce an instance catalog
+#+LATEX: \footnotesize
+#+BEGIN_SRC python
+from lsst.sims.catalogs.db import CatalogDBObject
+from lsst.sims.catUtils.utils import ObservationMetaDataGenerator
+from lsst.sims.catUtils.exampleCatalogDefinitions.phoSimCatalogExamples \
+    import PhoSimCatalogPoint, PhoSimCatalogSersic2D
+
+opsim_db = './minion_1016_sqlite.db'
+obsHistID = 203
+field_radius = 1.4   # degrees
+outfile = 'instance_catalog.txt'
+
+gen = ObservationMetaDataGenerator(database=opsim_db, driver='sqlite')
+db_config = dict(database='LSSTCATSIM',
+                 port=1433,
+                 host='fatboy.phys.washington.edu',
+                 driver='mssql+pymssql')
+obs_md = gen.getObservationMetaData(obsHistID=obsHistID,
+                                    boundLength=field_radius)[0]
+#+END_SRC
+
+* CatSim code example (continued)
+#+LATEX: \footnotesize
+#+BEGIN_SRC python
+star_objs = ['msstars', 'bhbstars', 'wdstars', 'rrlystars', 'cepheidstars']
+gal_objs = ['galaxyBulge', 'galaxyDisk']
+
+do_header = True
+for objid in star_objs:
+    db_obj = CatalogDBObject.from_objid(objid, **db_config)
+    phosim_object = PhoSimCatalogPoint(db_obj, obs_metadata=obs_md)
+    if do_header:
+        with open(outfile, 'w') as file_obj:
+            phosim_object.write_header(file_obj)
+        do_header = False
+    phosim_object.write_catalog(outfile, write_mode='a', write_header=False,
+                                chunk_size=20000)
+
+    for objid in gal_objs:
+        db_obj = CatalogDBObject.from_objid(objid, **db_config)
+        phosim_object = PhoSimCatalogSersic2D(db_obj, obs_metadata=obs_md)
+        phosim_object.write_catalog(outfile, write_mode='a', write_header=False,
+                                    chunk_size=20000)
+#+END_SRC
+
+* The Instance Catalog contents
+  Here's the PhoSim [[https://bitbucket.org/phosim/phosim_release/wiki/Instance%20Catalog][instance catalog documentation]], and example
+  observing parameters (at the top of the file):
+#+LATEX: \footnotesize
+#+BEGIN_SRC bash
+rightascension 31.1133844
+declination -10.0970060
+mjd 59797.2854090
+altitude 43.6990272
+azimuth 73.7707957
+filter 2
+rotskypos 69.0922930
+rottelpos 0.000
+dist2moon 145.1095257
+moonalt -11.1383568
+moondec -18.7702120
+moonphase 59.6288830
+moonra 230.9832941
+nsnap 2
+obshistid 161899
+seed 161899
+seeing 0.7613760
+sunalt -59.1098785
+vistime 33.0000000
+#+END_SRC
+
+* Instance Catalog example (cont.)
+The object entries are one per line:
+#+LATEX: \footnotesize
+#+BEGIN_SRC bash
+object 1046817878020 31.2400746 -10.09365 29.3370237 \
+  starSED/phoSimMLT/lte033-4.5-1.0a+0.4.BT-Settl.spec.gz 0 0 0 0 0 0 \
+  point none CCM 0.0635117705 3.1
+object 34308924793883 31.1323517 -9.98959037 26.0715008 \
+  galaxySED/Exp.40E09.02Z.spec.gz 0.548564017 0 0 0 0 0 \
+  sersic2d 0.580386579 0.446435213 2.77863669 1 \
+  CCM 0.100000001 3.0999999 CCM 0.0594432589 3.1
+#+END_SRC
+#+LATEX: \normalsize
+The values are ID, RA, Dec, magnitude at 500nm, SED filename,
+redshift, gamma1, gamma2 (shear pars), kappa (WL magnification),
+delta RA, delta Dec, source type, <spatial pars>, rest-frame
+extinction model, Av, Rv, Galactic extinction model, Av, Rv.
+
+* Astometry.net index files
+In order to use the LSST Stack to analyze CCD data, you need a catalog
+of reference stars and [[http://astrometry.net/][astrometry.net]] index files.  CatSim
+can be used to generate the reference catalog.  In the above instance
+catalog code, just set \code{objid='allstars'} and then run
+the astrometry.net tools as described in the [[https://github.com/LSSTDESC/Twinkles/blob/master/doc/Cookbook/DM_Level2_Recipe.md][Twinkles Level 2 cookbook]].
+
+* Running PhoSim
+- [[https://bitbucket.org/phosim/phosim_release/wiki/Using%20PhoSim][Installing PhoSim]] is very easy.  One just needs gcc, and the external
+  dependencies (cfitsio, fftw) will be downloaded.
+- Running PhoSim effectively is somewhat less obvious.  There is
+  online help via \code{phosim --help}, but the executable is not
+  really relocatable, so suggest doing
+#+LATEX: \footnotesize
+#+BEGIN_SRC bash
+<full path to phosim install>/phosim.py <instance catalog file> \
+  -o <full path to output area> -w <full path to work area> \
+  --sed=<full path to SED library directory> -s R22_S11
+#+END_SRC
+#+LATEX: \normalsize
+If you have the Stack set up, then the \code{SIMS\_SED\_LIBRARY\_DIR}
+enviroment variable can be used for the SED directory.  If the sensor
+option (\code{-s}) is omitted, then the entire focalplane will be
+simulated.
+
+* imSim: A GalSim-based image simulation package for LSST.
