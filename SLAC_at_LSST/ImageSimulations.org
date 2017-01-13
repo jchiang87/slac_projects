@@ -107,8 +107,7 @@ for objid in star_objs:
 
 * The Instance Catalog contents
   Here's the PhoSim [[https://bitbucket.org/phosim/phosim_release/wiki/Instance%20Catalog][instance catalog documentation]].
-  The observing parameters appear at the top of the instance catalog file.
-  Here's an example:
+  The observing parameters appear at the top of the instance catalog file:
 #+LATEX: \footnotesize
 #+BEGIN_SRC bash
 rightascension 31.1133844
@@ -132,11 +131,11 @@ sunalt -59.1098785
 vistime 33.0000000
 #+END_SRC
 #+LATEX: \normalsize
-- NB: The parameter names aren't rigorously checked by PhoSim, and
-  missing parameters will simply be replaced by default values.
+NB: The parameter names aren't rigorously checked by PhoSim, and
+missing parameters will simply be replaced by default values.
 
 * Instance Catalog example (cont.)
-The object entries are one per line:
+The object entries appear one per line:
 #+LATEX: \footnotesize
 #+BEGIN_SRC bash
 object 1046817878020 31.2400746 -10.09365 29.3370237 \
@@ -149,7 +148,7 @@ object 34308924793883 31.1323517 -9.98959037 26.0715008 \
 #+END_SRC
 #+LATEX: \normalsize
 The values are ID, RA, Dec, magnitude at 500nm, SED filename,
-redshift, gamma1, gamma2 (shear pars), kappa (WL magnification),
+redshift, gamma1, gamma2 (WL shear pars), kappa (WL magnification),
 delta RA, delta Dec, source type, <spatial pars>, rest-frame
 extinction model, Av, Rv, Galactic extinction model, Av, Rv.
 
@@ -158,18 +157,24 @@ In order to use the LSST Stack to analyze CCD data, you need a catalog
 of reference stars and [[http://astrometry.net/][astrometry.net]] index files.  CatSim can be used
 to generate the reference catalog.  In the above instance catalog
 code, just set \code{objid='allstars'} and then run the astrometry.net
-tools as described in the [[https://github.com/LSSTDESC/Twinkles/blob/master/doc/Cookbook/DM_Level2_Recipe.md][Twinkles Level 2 cookbook]].
+tools as described in the [[https://github.com/LSSTDESC/Twinkles/blob/master/doc/Cookbook/DM_Level2_Recipe.md][Twinkles Level 2 cookbook]]:
 #+LATEX: \footnotesize
 #+BEGIN_SRC bash
 $ setup astrometry_net
 $ setup pyfits
-$ text2fits.py -H 'id, ra, dec, u, g, r, i, z, y, starnotgal, isvariable' -s ', ' twinkles_ref_obs.txt twinkles_ref.fits -f 'kdddddjj'
+$ text2fits.py -H 'id, ra, dec, u, g, r, i, z, y, starnotgal, isvariable' \
+  -s ', ' twinkles_ref_obs.txt twinkles_ref.fits -f 'kdddddjj'
 $ export P=0106160
-$ build-astrometry-index -i twinkles_ref.fits -o index-${P}00.fits -I ${P}00 -P 0 -S r -n 100 -L 20 -E -j 0.4 -r 1 > build-00.log
-$ build-astrometry-index -1 index-${P}00.fits -o index-${P}01.fits -I ${P}01 -P 1 -S r -L 20 -E -M -j 0.4 > build-01.log &
-$ build-astrometry-index -1 index-${P}00.fits -o index-${P}02.fits -I ${P}02 -P 2 -S r -L 20 -E -M -j 0.4 > build-02.log &
-$ build-astrometry-index -1 index-${P}00.fits -o index-${P}03.fits -I ${P}03 -P 3 -S r -L 20 -E -M -j 0.4 > build-03.log &
-$ build-astrometry-index -1 index-${P}00.fits -o index-${P}04.fits -I ${P}04 -P 4 -S r -L 20 -E -M -j 0.4 > build-04.log
+$ build-astrometry-index -i twinkles_ref.fits -o index-${P}00.fits -I ${P}00 \
+  -P 0 -S r -n 100 -L 20 -E -j 0.4 -r 1 > build-00.log
+$ build-astrometry-index -1 index-${P}00.fits -o index-${P}01.fits -I ${P}01 \
+  -P 1 -S r -L 20 -E -M -j 0.4 > build-01.log &
+$ build-astrometry-index -1 index-${P}00.fits -o index-${P}02.fits -I ${P}02 \
+  -P 2 -S r -L 20 -E -M -j 0.4 > build-02.log &
+$ build-astrometry-index -1 index-${P}00.fits -o index-${P}03.fits -I ${P}03 \
+  -P 3 -S r -L 20 -E -M -j 0.4 > build-03.log &
+$ build-astrometry-index -1 index-${P}00.fits -o index-${P}04.fits -I ${P}04 \
+  -P 4 -S r -L 20 -E -M -j 0.4 > build-04.log
 $ mkdir and_files
 $ mv index*.fits and_files
 $ cd and_files
@@ -177,15 +182,14 @@ $ cd and_files
 #+LATEX: \normalsize
 
 * Running PhoSim
-- [[https://bitbucket.org/phosim/phosim_release/wiki/Using%20PhoSim][Installing PhoSim]] is very easy.  One really just needs gcc; all of
+- [[https://bitbucket.org/phosim/phosim_release/wiki/Using%20PhoSim][Installing PhoSim]] is very easy.  One only needs gcc; all of
   the external dependencies (cfitsio, fftw) can be downloaded in the
   configure step.
 
 - Running PhoSim effectively is somewhat less obvious.  There is
   online help via \code{phosim --help}, but that assumes one is
-  running from the build/install directory.  Since the executable is
-  not really relocatable, so suggest doing
-
+  running from the build/install directory.  The executable is
+  not really relocatable, so suggest doing something like
 #+LATEX: \footnotesize
 #+BEGIN_SRC bash
 <full path to phosim install>/phosim.py <instance catalog file> \
@@ -193,33 +197,35 @@ $ cd and_files
   --sed=<full path to SED library directory> -s R22_S11
 #+END_SRC
 #+LATEX: \normalsize
-If you have the Stack set up, then the \code{SIMS\_SED\_LIBRARY\_DIR}
-enviroment variable can be used for the SED directory.  If the sensor
-option (\code{-s}) is omitted, then the entire focalplane will be
-simulated.
+  If you have the LSST Stack set up, then the
+  \code{SIMS\_SED\_LIBRARY\_DIR} enviroment variable can be used for
+  the SED directory.  If the sensor selection option (\code{-s}) is omitted,
+  then the entire focal plane will be simulated.
 
-* imSim: A GalSim-based image simulation package for LSST.
+* The \code{sims\_GalSimInterface} package
+
 - At LSST2016, Scott Daniel [[https://project.lsst.org/meetings/lsst2016/agenda/end-end-galsim-lsst][reported on the \code{sims\_GalSimInterface}
-  package]].  This package will use CatSim code to
-  - Associate objects with SEDs (as it does to produce instance catalogs)
-  - Locate objects on CCDs
-  - Formulate parameters for GalSim to draw the object
-  - Calculate LSST WCS
-  It does all this by directly calling the GalSim API.  The results are
-  sensor-level images in the LSST focal plane, i.e., essentially the same
-  type of output as PhoSim.
+  package]]. This package uses CatSim code to
+  - associate objects with SEDs (as it does to produce instance catalogs),
+  - locate objects on CCDs,
+  - formulate parameters for GalSim to draw the object,
+  - calculate LSST WCS.
+  With these inputs, this code calls the GalSim API to produce
+  sensor-level images in the LSST focal plane, i.e., essentially the
+  same type of output ("e-images") as PhoSim.
 
-- Advantages:
+* \code{sims\_GalSimInterface} (cont.)
+- Advantages
   - Can use arbitrary object databases (i.e., not necessarily the UW dbs).
-  - Analytic SED models can be injected (versus tabulated, ASCII file SEDs).
+  - Analytic SED models can be injected (versus tabulated ASCII file SEDs).
   - Enables one to use GalSim to generate LSST simulated observations.
 
 - Shortcomings:
   - Does not accept external catalog files, i.e., instance catalogs.
     (Though it can, of course, generate them.)
   - LSST CatSim database API may be difficult to use.
-  - Calls to GalSim mediated by CatSim, i.e., GalSim features not directly
-    exposed to the user.
+  - Calls to GalSim mediated by CatSim, i.e., GalSim functionality is not
+    directly accessible to the user.
 
 * The LSSTDESC/imSim Package
   This package was created to address the shortcomings and next steps:
