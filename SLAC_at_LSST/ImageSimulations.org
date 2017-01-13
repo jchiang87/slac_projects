@@ -192,7 +192,7 @@ $ cd and_files
   not really relocatable, so suggest doing something like
 #+LATEX: \footnotesize
 #+BEGIN_SRC bash
-<full path to phosim install>/phosim.py <instance catalog file> \
+$ <full path to phosim install>/phosim.py <instance catalog file> \
   -o <full path to output area> -w <full path to work area> \
   --sed=<full path to SED library directory> -s R22_S11
 #+END_SRC
